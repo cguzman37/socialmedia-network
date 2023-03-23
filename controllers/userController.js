@@ -31,11 +31,13 @@ module.exports = {
       .then((user) =>
         !user
           ? res.status(404).json({ message: 'No user with that ID' })
-          : Thoughts.deleteMany({ _id: { $in: user.thought } })
-      )
-      .then(() => res.json({ message: 'Users and thoughts deleted!' }))
-      .catch((err) => res.status(500).json(err));
-  },
+          : Thought.deleteMany({ _id: { $in: user.thought } })
+      
+      .then(() => res.status(200).json({ message: 'Users and thoughts deleted!' }))
+      .catch((err) => res.status(500).json(err))
+  )
+  .catch((err) => res.status(500).json(err));
+},
   
   updateUser(req, res) {
     User.findOneAndUpdate(
@@ -46,6 +48,38 @@ module.exports = {
       .then((user) =>
         !user
           ? res.status(404).json({ message: 'No user with this id!' })
+          : res.json(user)
+      )
+      .catch((err) => res.status(500).json(err));
+  },
+  addFriend(req, res) {
+    console.log('You are adding an assignment');
+    console.log(req.body);
+    User.findOneAndUpdate(
+      { _id: req.params.userId },
+      { $addToSet: { friends: req.params.friendId} },
+      { runValidators: true, new: true }
+    )
+      .then((user) =>
+        !user
+          ? res
+              .status(404)
+              .json({ message: 'No student found with that ID :(' })
+          : res.json(user)
+      )
+      .catch((err) => res.status(500).json(err));
+  },
+  removeFriend(req, res) {
+    User.findOneAndUpdate(
+      { _id: req.params.userId },
+      { $pull: { friends: req.params.friendId } },
+      { runValidators: true, new: true }
+    )
+      .then((user) =>
+        !user
+          ? res
+              .status(404)
+              .json({ message: 'No student found with that ID :(' })
           : res.json(user)
       )
       .catch((err) => res.status(500).json(err));
